@@ -3,6 +3,8 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Modal } from "react-responsive-modal";
+import 'react-responsive-modal/styles.css';
+
 import './App.css';
 import paperplane from './images/envelope-to-paper-plane-animation.gif';
 
@@ -11,10 +13,10 @@ function App() {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [preview, setPreview] = useState({
-    id:"",
-    url:""
-  });
+
+  const [id, setId] = useState("");
+  const [url, setUrl] = useState("");
+
   const [showModal, setShowModal] = useState(false)
 
   const openModal = () => {
@@ -27,9 +29,9 @@ function App() {
 
   const sendMail = async(e) => {
     e.preventDefault();
-    await axios.post('http://localhost:5000/api/mail/send', {name, email, subject, message})
+    await axios.post('https://nodemailer-server-1994.herokuapp.com/api/mail/send', {name, email, subject, message})
               .then((res) => {
-                if(res.status==200){
+                if(res.status === 200){
                   toast.success('Check your inbox', {
                     theme:"colored",
                     position: "top-right",
@@ -40,9 +42,11 @@ function App() {
                     draggable: true,
                     progress: undefined,
                   });
+                  setId(res.data.id);
+                  setUrl(res.data.url);
                   openModal();
-                  setPreview(preview => [...preview, res.data]);
-                  console.log(preview)
+                  
+                  console.log(id, url)
                 }else {
                   toast.error("Error");
                 }
@@ -83,7 +87,7 @@ function App() {
           onChange={e => setMessage(e.target.value)}
         />
 
-        <button onClick={sendMail}>SEND</button>
+        <button onClick={sendMail} className="btn">SEND</button>
       </div>
       <ToastContainer
         position="top-right"
@@ -96,7 +100,15 @@ function App() {
         draggable
         pauseOnHover
       />
-
+      <Modal open={showModal} onClose={closeModal} classNames="modal">
+      <h2>Email Info</h2>
+      <div className='preview-data'>
+        <h4>Email Id : </h4>
+        <input className="preview-data__input" type="text"  value= {id} disabled />
+        <h4>Email Url : </h4>
+        <a href={url} target="_blank"><button className="btn">SHOW EMAIL</button></a>
+      </div>
+      </Modal> 
     </div>
   );
 }
